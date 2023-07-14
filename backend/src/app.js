@@ -1,16 +1,19 @@
 // create a simple backend api server to connect to a db and store users
 const path = require("path");
 const fs = require("fs");
+const mongoose = require("mongoose");
 const { marked } = require("marked");
 const express = require("express");
 const cors = require("cors");
-const dontenv = require("dotenv");
-const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+dotenv.config({ path: "./config.env" });
+
 const userRouter = require("./routes/user.route");
 
-dontenv.config({ path: "./config.env" });
+// dotenv.config({ path: path.resolve("..", "config.env") });
 
-const { PORT, DB_URL } = process.env;
+const { PORT, DB_URL, MODE } = process.env;
+
 const readMePath = path.join(__dirname, "..", "README.md");
 const readMeFile = fs.readFileSync(readMePath, "utf-8");
 
@@ -28,12 +31,17 @@ app.use("/users", userRouter);
 
 // connect to a database and start a server
 const startApp = async () => {
-  if (!DB_URL) throw new Error("Database Connection string incorrect");
-  // =======
+  if (MODE === "docker" && !DB_URL)
+    throw new Error("Database Connection string incorrect");
+
   console.log("🔥 🔥 Database connection URL", DB_URL);
   try {
-    await mongoose.connect(DB_URL);
-    console.log("💠 Connect to Database");
+    // If user is setting up docker
+    if (MODE === "docker") {
+      await mongoose.connect(DB_URL);
+      console.log("💠 Connect to Database");
+    }
+
     app.listen(PORT || 4000, () => {
       console.log("✌ Api server running on port ", PORT);
     });

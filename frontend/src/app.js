@@ -19,6 +19,8 @@ function createUser(event) {
     .then((response) => response.json())
     .then((data) => {
       console.log("Data", data);
+      event.target.email.value = "";
+      event.target.userName.value = "";
     })
     .catch((err) => {
       console.log("Error,", err);
